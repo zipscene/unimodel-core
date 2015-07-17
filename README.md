@@ -1,6 +1,111 @@
 # zs-unimodel
 
-Basis for zsapi unified model framework
+Unimodel is a specification and framework for creating models across multiple different data
+sources that behave the same.  Model implementors must override the relevant methods on the
+base classes, and model users can expect a consistent interface.
+
+## Overview
+
+Unimodel centers around two concepts - models and documents.
+
+A _model_ is an object that handles dealing with a particular collection of objects in a datastore.
+Models contain methods such as `find()` and `create()` that interact with the collection itself
+rather than individual objects contained inside the collection.
+
+A _document_ is a single object inside of a collection.  Models have methods that return documents,
+and documents contain methods that interact with that single object, such as `save()` and `remove()`.
+
+In Unimodel, both models and documents are represented by ES6 classes.  The class (constructor) for
+the model is called the _model class_ and the class (constructor) for documents is called the
+_document class_.  Unlike similar model systems, methods on the model like `find()` are actually
+instance methods on the model, instead of static methods on the model class.
+
+Model classes can be abstract, such that multiple different types of models can be instantiated
+from a model class.  For example, the following models and documents could be involved in a system
+storing Animal objects in a Mongo database.
+
+- A `MongoModel` model class which creates models stored in a Mongo database.
+- An `animalModel` instance of MongoModel which includes the schema and collection name of animals.
+- A `MongoDocument` document class which is used to instantiate Mongo objects.
+- Multiple `animal` objects which are instances of `MongoDocument`, created using `animalModel.create()`.
+
+Here's another example where the model is not on top of a generic database, but is instead on top
+of a specific API (say, Twitter).
+
+- A `TweetModel` model class which creates tweet models.
+- A `tweetModel` model, containing `find()`, `create()`, etc.
+- A `TweetDocument` document class which is used to instantiate Tweet documents.
+- Many `tweet` objects which are instances of `TweetDocument` and correspond to individual tweets.
+
+## Model
+
+To create a model, inherit from the base `Model` class and override any of its methods that you support.
+
+```js
+const Model = require('zs-unimodel').Model;
+```
+
+These methods are:
+
+### constructor()
+
+The constructor takes no options by default.  Child classes may add options (for example, the Mongo
+model above would take a schema and collection name as constructor parameters).
+
+### find(query[, options])
+
+This method performs a query on the database and returns a promise that resolve with the results.
+The query is a common-query query which should be transformed to whatever the underlying database
+supports.  If an unsupported query operator is used, `find()` should throw an `UNSUPPORTED_OPERATION`
+XError.
+
+Standard options are: (individual models can add their own model-specific options)
+
+- `skip` - Number of documents at the start of the result set to skip over
+- `limit` - Maximum number of results to return.  Models may set their own defaults.
+- `fields` - An array of field names to return, by default all fields are returned
+- `total` - If set to boolean `true`, the returned result array also contains a property called
+  `total` which contains the total number of results without the limit.
+
+```js
+model.find(
+	{ foo: { $gt: 5 } },
+	{
+		fields: [ 'thing', 'thing2.subfield' ],
+		total: true
+	}
+).then( function(results) {
+	// results = [ document1, document2 ]
+	// results.total = 2
+} )
+```
+
+If `find()` is not overridden but `findStream()` is, the default implementation of `find()` will
+use `findStream()` to return results.
+
+### findStream(query[, options])
+
+This method is similar to `find()` but instead of returning a promise that resolves with an array
+of results, `findStream()` returns a readable object stream to stream results.  It takes the same
+options as `find()`.
+
+The returned stream should be a zstreams readable object stream with the `DocumentStream` class
+mixed in.  This returned stream should contain a method called `getTotal()`, which returns a
+promise resolving with the total number of results.
+
+```js
+model.findStream({ foo: { $gt: 5 } }).intoArray().then(...);
+```
+
+If `findStream()` is not overridden, but `find()` is, the default implementation will use `find()`
+and construct a fake readable stream.
+
+### count(query[, options])
+
+Takes the same options as `find()`.  Returns a promise that resolves with the count of documents
+matching the query.
+
+### aggregate(query, aggregate[, options])
 
 ## Aggregates
 
