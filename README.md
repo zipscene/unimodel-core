@@ -66,6 +66,8 @@ Standard options are: (individual models can add their own model-specific option
 - `fields` - An array of field names to return, by default all fields are returned
 - `total` - If set to boolean `true`, the returned result array also contains a property called
   `total` which contains the total number of results without the limit.
+- `sort` - An array of field names to sort by.  Each field name can be optionally prefixed
+  with `-` to reverse its sort order.
 
 ```js
 model.find(
@@ -105,7 +107,180 @@ and construct a fake readable stream.
 Takes the same options as `find()`.  Returns a promise that resolves with the count of documents
 matching the query.
 
+### create([data])
+
+Creates and returns a new document, optionally with the provided data.  This does not immediately
+save to the database.  Call `save()` on the document to save it.
+
+```js
+var animal = animals.create({
+	animalType: 'cat',
+	name: 'Toby'
+});
+```
+
 ### aggregate(query, aggregate[, options])
+
+This method performs an aggregate on a collection (ie, statistics or grouping).
+
+The `query` argument specifies a filter.  The aggregate only operates on documents matched by the filter.
+
+The `aggregate` option specifies an aggregate spec (instructions on how to perform the aggregate).  See
+the `Aggregates` section below for details on how to specify aggregates.
+
+Options can include:
+
+- `limit` - Maximum number of result entries to return.
+- `sort` - Array of fields to sort the results by.  These fields reference the result entries.  For
+  example, a sort field could be `age.avg` .
+
+```js
+model.aggregate({
+	shelterLocation: 'Clifton'
+}, {
+	aggregateType: 'stats',
+	statsField: [ 'age', 'dateFound' ],
+	max: true
+}, {
+	limit: 5,
+	sort: [ 'dateFound.max' ]
+}).then(function(results) {
+	// ...
+});
+```
+
+### aggregateMulti(query, aggregates[, options])
+
+This method performs multiple aggregations at once.  It behaves the same as `aggregate()`, but the
+`aggregates` argument is a map from keys to aggregate specs, and the result object is a map from
+the same keys to aggregate results.
+
+```js
+model.aggregateMulti({
+	shelterLocation: 'Clifton'
+}, {
+	foo: {
+		aggregateType: 'stats',
+		statsField: [ 'age', 'dateFound' ],
+		max: true
+	},
+	bar: {
+		aggregateType: 'group',
+		groupBy: {
+			field: 'animalType'
+		},
+		statsField: 'age',
+		avg: true,
+		total: true
+	}
+}).then(function(resultMap) {
+	// resultMap.foo = { total: 200, ... }
+	// resultMap.bar = [ { key: ... }, ... ]
+});
+```
+
+### remove(query[, options])
+
+Remove a list of documents from the database that match the given query.  All options
+are model-specific.
+
+```js
+animals.remove({ animalType: 'dog' }).then(function(numRemoved) { ... })
+```
+
+### update(query, update[, options])
+
+Performs an update operation on all documents in the database that match a query.  The update
+expression given is a CommonQuery syntax update.
+
+Options can include:
+
+- `allowFullReplace` - By default, if the update expression doesn't contain any operators (starting
+with `$`), the whole object is implicitly wrapped in a `$set` instead of replacing the entire
+document.  If `allowFullReplace` is set to true, this behavior is disabled.
+
+```js
+animals.update({
+	name: 'Toby'
+}, {
+	$inc: { age: 1 }
+}).then(function(numUpdated) { ... });
+```
+
+### insert(data[, options])
+
+Inserts a document directly into the database without constructing the `Document` object.
+
+```js
+animals.insert({
+	animalType: 'cat',
+	name: 'Toby',
+	age: 5,
+	...
+}).then(function() { ... });
+```
+
+## Document
+
+A document represents a single object in the datastore.  It should not be constructed
+directly (except by the model implementation).  Instead, create new documents using
+`model.create()` .
+
+Methods are:
+
+### getData()
+
+Unlike model systems like mongoose, data on documents is not stored directly on the Document
+object.  To get the object that contains the document data, call `getData()` on the document.
+The returned object is both readable and mutable.
+
+```js
+var animalData = animal.getData();
+```
+
+### getModel()
+
+Returns the model instance that created the document.
+
+### save()
+
+Saves the current document data.
+
+```js
+animal.save().then(function() { ... })
+```
+
+### remove()
+
+Remove the document from the datastore.
+
+```js
+animal.remove().then(function() { ... })
+```
+
+## Hooks
+
+Like mongoose, unimodel models have hooks that are registered on the model and are executed
+when various document actions are performed.  Hooks are implemented by `crisphooks` and are
+registered like this:
+
+```js
+animalModel.hook('pre-save', function(animal) {
+	animal.age++;
+	// Can optionally return a promise
+});
+```
+
+Models can add their own hook types.  Defined hooks are:
+
+- `post-init` - A synchronous-only hook that executes after a document object is constructed.
+  It takes a parameter of the document, and `this` points to the model.
+- `pre-save` - Executes before the document is saved.  It takes a parameter of the document,
+  and `this` points to the model.
+- `post-save` - Executes after the document is saved, before `save()` returns.  It takes a
+  parameter of the document, and `this` points to the model.
+- `pre-remove` - Executes before the document is removed.
+- `post-remove` - Executes after the document is removed.
 
 ## Aggregates
 
