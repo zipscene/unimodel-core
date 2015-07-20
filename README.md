@@ -25,16 +25,16 @@ from a model class.  For example, the following models and documents could be in
 storing Animal objects in a Mongo database.
 
 - A `MongoModel` model class which creates models stored in a Mongo database.
-- An `animalModel` instance of MongoModel which includes the schema and collection name of animals.
+- An `Animals` instance of MongoModel which includes the schema and collection name of animals.
 - A `MongoDocument` document class which is used to instantiate Mongo objects.
-- Multiple `animal` objects which are instances of `MongoDocument`, created using `animalModel.create()`.
+- Multiple `animal` objects which are instances of `MongoDocument`, created using `Animals.create()`.
 
 Here's another example where the model is not on top of a generic database, but is instead on top
 of a specific API (say, Twitter).
 
 - A `TweetModel` model class which creates tweet models.
-- A `tweetModel` model, containing `find()`, `create()`, etc.
-- A `TweetDocument` document class which is used to instantiate Tweet documents.
+- A `Tweets` model, containing `find()`, `create()`, etc.
+- A `Tweet` document class which is used to instantiate Tweet documents.
 - Many `tweet` objects which are instances of `TweetDocument` and correspond to individual tweets.
 
 ## Model
@@ -138,12 +138,15 @@ Options can include:
 model.aggregate({
 	shelterLocation: 'Clifton'
 }, {
-	aggregateType: 'stats',
-	statsField: [ 'age', 'dateFound' ],
-	max: true
+	type: 'stats',
+	stats: {
+		age: {
+			max: true
+		}
+	}
 }, {
 	limit: 5,
-	sort: [ 'dateFound.max' ]
+	sort: [ 'stats.age.max' ]
 }).then(function(results) {
 	// ...
 });
@@ -160,18 +163,20 @@ model.aggregateMulti({
 	shelterLocation: 'Clifton'
 }, {
 	foo: {
-		aggregateType: 'stats',
-		statsField: [ 'age', 'dateFound' ],
-		max: true
+		type: 'stats',
+		stats: {
+			age: {
+				max: true
+			}
+		}
 	},
 	bar: {
-		aggregateType: 'group',
-		groupBy: {
-			field: 'animalType'
-		},
-		statsField: 'age',
-		avg: true,
-		total: true
+		type: 'stats',
+		stats: {
+			age: {
+				max: true
+			}
+		}
 	}
 }).then(function(resultMap) {
 	// resultMap.foo = { total: 200, ... }
@@ -308,17 +313,17 @@ matched by a query).
 ```js
 {
 	// Statistics across the whole collection
-	aggregateType: 'stats',
-	// Execute statistics on the 'age' field
-	statsField: 'age',
+	type: 'stats',
+	// Perform statistics on a field
+	stats: {
+		age: {
+			count: true,
+			avg: true,
+			max: true
+		}
+	},
 	// Return the total number of documents the aggregate is executed across
-	total: true,
-	// Return the number of documents which have a non-null 'age' field
-	count: true,
-	// Return the average age
-	avg: true,
-	// Return the maximum age
-	max: true
+	total: true
 }
 ```
 
@@ -328,36 +333,42 @@ A result set for this aggregate would look something like:
 {
 	// There are 400 animals matched by the query
 	total: 400,
-	age: {
-		// Of those, 329 have non-null 'age' fields
-		count: 329,
-		// The average age of animals in 5.2382
-		avg: 5.2382,
-		// The maximum age of animals is 19.2
-		max: 19.2
+	stats: {
+		age: {
+			// Of those, 329 have non-null 'age' fields
+			count: 329,
+			// The average age of animals in 5.2382
+			avg: 5.2382,
+			// The maximum age of animals is 19.2
+			max: 19.2
+		}
 	}
 }
 ```
 
 The different types of stats you can ask for are:
 
-- total - The total number of documents matched by the aggregate query.  This stat appears
-  outside of the field blocks.
-- count - The number of documents that contain a non-null value for statsField.
-- avg - The average value statsField.
-- min - The minimum value of statsField.
-- max - The maximum value of statsField.
+- count - The number of documents that contain a non-null value for the field.
+- avg - The average value of the field.
+- min - The minimum value of the field.
+- max - The maximum value of the field.
 
 Not all model types need support all of these types of stats, and model types may add
 additional stats if they are supported.
 
-You can also supply more than one statsField in the aggregate:
+You can also supply more than one stats field in the aggregate:
 
 ```js
 {
-	aggregateType: 'stats',
-	statsField: [ 'age', 'dateFound' ],
-	max: true
+	type: 'stats',
+	stats: {
+		age: {
+			max: true
+		},
+		dateFound: {
+			min: true
+		}
+	}
 }
 ```
 
@@ -365,11 +376,36 @@ Results might look like this:
 
 ```js
 {
-	age: {
-		max: 19.2
-	},
-	dateFound: {
-		max: '2015-04-12T07:22:09Z'
+	stats: {
+		age: {
+			max: 19.2
+		},
+		dateFound: {
+			min: '2015-04-12T07:22:09Z'
+		}
+	}
+}
+```
+
+For convenience, `stats` can be a single string.  In this case, the string is treated as
+a field name, and the `count` stat is executed on it:
+
+```js
+{
+	type: 'stats',
+	stats: 'animalType'
+}
+```
+
+is converted to:
+
+```js
+{
+	type: 'stats',
+	stats: {
+		animalType: {
+			count: true
+		}
 	}
 }
 ```
@@ -381,15 +417,17 @@ This type of aggregate will return statistics grouped by different values of a f
 ```js
 {
 	// Group by field values
-	aggregateType: 'group',
+	type: 'group',
 	// The field to group by is 'animalType'
 	groupBy: {
 		field: 'animalType'
 	},
 	// Perform statistics within each group on the 'age' field
-	statsField: 'age',
-	// Return the average age
-	avg: true,
+	stats: {
+		age: {
+			avg: true
+		}
+	},
 	// Return the total number of documents in each group
 	total: true
 }
@@ -402,36 +440,60 @@ Results look like:
 	{
 		// The value of the groupBy field (see below for why this is an array)
 		key: [ 'cat' ],
-		// One entry for each statsField with the requested stats
-		age: {
-			// Average age of cats
-			avg: 7.2
+		// Requested statistics for this grouping
+		stats: {
+			age: {
+				// Average age of cats
+				avg: 7.2
+			}
 		},
 		// There are 18 cats in the database (note that this is outside the field stats blocks)
 		total: 18
 	},
 	{
 		key: [ 'dog' ],
-		age: {
-			avg: 6.4
+		stats: {
+			age: {
+				avg: 6.4
+			}
 		},
 		total: 12
 	},
 	{
 		key: [ 'bird' ],
-		age: {
-			avg: 2.1
+		stats: {
+			age: {
+				avg: 2.1
+			}
 		},
 		total: 4
 	}
 ]
 ```
 
-You can also leave off `statsField` to get only totals:
+As a shorthand, you can specify a string as `groupBy`:
 
 ```js
 {
-	aggregateType: 'group',
+	groupBy: 'animalType'
+}
+```
+
+is converted to:
+
+```js
+{
+	groupBy: [ {
+		field: 'animalType'
+	} ]
+}
+```
+
+You can also leave off `stats` to get only totals:
+
+```js
+{
+	type: 'group',
 	groupBy: { field: 'animalType' },
 	total: true
 }
@@ -463,7 +525,7 @@ This will group by ranges of a numeric field.
 
 ```js
 {
-	aggregateType: 'group',
+	type: 'group',
 	groupBy: {
 		// Continuously-valued field to group by
 		field: 'age',
@@ -479,7 +541,7 @@ This will group by ranges of a numeric field.
 		]
 	},
 	// Give total matching for each group
-	// Note that you can also supply statsField and stats flags here as well
+	// Note that you can also supply stats here as well
 	total: true
 }
 ```
@@ -514,7 +576,7 @@ These ranges can also be dates if applied to a date field:
 
 ```js
 {
-	aggregateType: 'group',
+	type: 'group',
 	groupBy: {
 		field: 'dateFound',
 		ranges: [
@@ -527,11 +589,53 @@ These ranges can also be dates if applied to a date field:
 }
 ```
 
+For convenience, a continuous series of non-overlapping ranges can be specified as:
+
+```js
+{
+	type: 'group',
+	groupBy: {
+		field: 'age',
+		ranges: [ 1, 3, 9 ]
+	},
+	total: true
+}
+```
+
+The output of this is:
+
+```js
+[
+	{
+		// This key corresponds to the range ENDING at index 0 (ie, all animals less than 1 year old)
+		key: [ 0 ],
+		// There are 5 animals in this range (less than 1 year old)
+		total: 5
+	},
+	{
+		// Range from 1-3 years
+		key: [ 1 ],
+		total: 8
+	},
+	{
+		// Range from 3-9 years
+		key: [ 2 ],
+		total: 14
+	},
+	{
+		// One more result entry than entries in the array
+		// This is for animals more than 9 years old
+		key [ 3 ],
+		total: 7
+	}
+]
+```
+
 ### Group by Fixed Sized Intervals
 
 ```js
 {
-	aggregateType: 'group',
+	type: 'group',
 	groupBy: {
 		// Segment the numeric field 'age'
 		field: 'age',
@@ -574,7 +678,7 @@ ISO 8601 time Duration.  For example, an interval of 'P3H15M' is an interval of 
 
 ```js
 {
-	aggregateType: 'group',
+	type: 'group',
 	groupBy: {
 		field: 'dateFound',
 		interval: 'P8H',
@@ -611,7 +715,7 @@ you to group by time components.
 
 ```js
 {
-	aggregateType: 'group',
+	type: 'group',
 	groupBy: {
 		// Field to group by
 		field: 'dateFound',
@@ -661,7 +765,7 @@ The `timeComponentCount` field is optional, and can be used to create longer int
 
 ```js
 {
-	aggregateType: 'group',
+	type: 'group',
 	groupBy: {
 		field: 'dateFound',
 		timeComponent: 'day',
@@ -676,15 +780,15 @@ Can result in:
 ```js
 [
 	{
-		key: '2012-01-01T00:00:00Z',
+		key: [ '2012-01-01T00:00:00Z' ],
 		total: 1
 	},
 	{
-		key: '2012-01-03T00:00:00Z',
+		key: [ '2012-01-03T00:00:00Z' ],
 		total: 2
 	},
 	{
-		key: '2012-01-05T00:00:00Z',
+		key: [ '2012-01-05T00:00:00Z' ],
 		total: 2
 	},
 	...
@@ -696,6 +800,7 @@ component may be cut short (for example, in months with 31 days, the last interv
 the above example would be only a single day instead of 2 days).
 
 The "base" value for a time component is always the first valid point in time for that component.
+For `year`, the base point in time used is year 1.
 
 ### Grouping By Multiple Fields
 
@@ -704,7 +809,7 @@ of values is considered a group.
 
 ```js
 {
-	aggregateType: 'group',
+	type: 'group',
 	groupBy: [
 		{
 			field: 'animalType'
