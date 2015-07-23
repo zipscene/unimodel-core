@@ -21,6 +21,8 @@
     "lodash": "^3.10.0",
     "pasync": "^1.1.0",
     "xerror": "^1.0.0",
+    "zs-common-query": "^1.2.0",
+    "zs-common-schema": "^1.1.0",
     "zs-objtools": "^1.1.0",
     "zstreams": "^3.2.1"
   },
