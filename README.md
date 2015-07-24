@@ -52,6 +52,17 @@ These methods are:
 The constructor takes no options by default.  Child classes may add options (for example, the Mongo
 model above would take a schema and collection name as constructor parameters).
 
+### getName()
+
+Returns a name that can be used for the model.  It should be uppercase and pluralized.  For example,
+`Animals`.
+
+### getKeys()
+
+Returns an array of field names which are used to key the document.  These field names are in order
+from most specific to least specific.  For example, a model that stores cities might have the keys
+`[ 'cityName', 'state', 'country', 'planet' ]`.
+
 ### find(query[, options])
 
 This method performs a query on the database and returns a promise that resolve with the results.
@@ -286,6 +297,67 @@ Models can add their own hook types.  Defined hooks are:
   parameter of the document, and `this` points to the model.
 - `pre-remove` - Executes before the document is removed.
 - `post-remove` - Executes after the document is removed.
+
+## Schema-based Models
+
+Unimodel also contains additional base classes for schema-based abstract models.  These inherit
+from the normal base classes.
+
+## SchemaModel
+
+`SchemaModel` contains all the methods of `Model` along with the following additions:
+
+### constructor(schema[, options])
+
+The constructor takes a CommonSchema `Schema` object in addition to its normal options.  Options
+can additionally contain anything that `Schema#normalize()` accepts.
+
+### getSchema()
+
+Returns the CommonSchema `Schema`.
+
+### getKeys()
+
+Returns an array of all fields in the schema marked with `{ key: true }`.  This flag indicates that
+the field is part of a key used to identify the document.
+
+For example, given this schema
+
+```js
+{
+	foo: { type: String, key: true },
+	bar: { type: Date, key: true },
+	baz: Number
+}
+```
+
+`getKeys()` will return `[ 'foo', 'bar' ]` .
+
+### normalizeQuery(query[, options])
+
+Given a CommonQuery `Query` object, normalizes it according to the model's schema.  Options can
+contain anything `Query#normalize()` accepts.  The query passed in can also be a plain object,
+in which case it's converted to a `Query`.  Returns the normalized `Query` object.
+
+### normalizeUpdate(update[, options])
+
+Same thing as `normalizeQuery()` but for CommonQuery updates.
+
+### normalizeAggregate(aggregate[, options])
+
+Same thing as `normalizeQuery()` but for CommonQuery aggregates.
+
+
+## SchemaDocument
+
+### normalize([options])
+
+Normalizes the document data according to the model's schema, in-place.  Also executes the
+`pre-normalize` and `post-normalize` hooks.  Normally this should be called from the implementing
+class's `save()` method.
+
+This `normalize()` method returns a promise as hooks can execute asynchronously.
+
 
 ## Aggregates
 
