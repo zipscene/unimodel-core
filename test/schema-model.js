@@ -1,7 +1,4 @@
 const expect = require('chai').expect;
-const XError = require('xerror');
-const Model = require('../lib').Model;
-const Document = require('../lib').Document;
 const _ = require('lodash');
 const SchemaModel = require('../lib').SchemaModel;
 const SchemaDocument = require('../lib').SchemaDocument;
@@ -10,7 +7,6 @@ const QueryValidationError = require('zs-common-query').QueryValidationError;
 const pasync = require('pasync');
 
 describe('Schema Model', function() {
-
 	class TestSchemaDocument extends SchemaDocument {
 		save() {
 			return this.normalize();
@@ -169,6 +165,4 @@ describe('Schema Model', function() {
 			.catch(done)
 			.catch(pasync.abort);
 	});
-
 });
-
