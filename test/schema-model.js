@@ -69,6 +69,52 @@ describe('Schema Model', function() {
 		testModel.normalizeQuery(query);
 	});
 
+	it('should normalize updates', function() {
+		let testModel = new TestSchemaModel(testSchemaData);
+		let update = testModel.normalizeUpdate({
+			'foo.baz': '123',
+			buz: 'true'
+		});
+		expect(update.getData()).to.deep.equal({
+			$set: {
+				'foo.baz': 123,
+				buz: true
+			}
+		});
+	});
+
+	it('should normalize aggregates', function() {
+		let testModel = new TestSchemaModel(testSchemaData);
+		let aggregate = testModel.normalizeAggregate({
+			stats: {
+				'foo.key2': {
+					count: true,
+					min: true
+				},
+				buz: {
+					min: true,
+					max: true,
+					avg: true
+				}
+			},
+			total: true
+		});
+		expect(aggregate.getData()).to.deep.equal({
+			stats: {
+				'foo.key2': {
+					count: true,
+					min: true
+				},
+				buz: {
+					min: true,
+					max: true,
+					avg: true
+				}
+			},
+			total: true
+		});
+	});
+
 	it('should return an ordered list of key fields with getKeys()', function() {
 		let testModel = new TestSchemaModel(testSchemaData);
 		expect(testModel.getKeys()).to.deep.equal([ 'key1', 'foo.key2' ]);
