@@ -66,7 +66,7 @@ from most specific to least specific.  For example, a model that stores cities m
 ### getModelType()
 
 Returns the base model type, overridden at whichever levels make sense to distinguish.
-For example, `unimongo` or `unimodel-elasticsearch`.
+For example, `UniMongoModel` or `UniModelElasticsearchModel`.
 
 ### find(query[, options])
 
