@@ -63,6 +63,11 @@ Returns an array of field names which are used to key the document.  These field
 from most specific to least specific.  For example, a model that stores cities might have the keys
 `[ 'cityName', 'state', 'country', 'planet' ]`.
 
+### getModelType()
+
+Returns the base model type, which is typically simply the constructor name.
+For example, `UnimongoModel` or `ElasticsearchModel`.
+
 ### find(query[, options])
 
 This method performs a query on the database and returns a promise that resolve with the results.
