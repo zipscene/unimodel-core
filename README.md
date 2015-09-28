@@ -63,7 +63,7 @@ Returns an array of field names which are used to key the document.  These field
 from most specific to least specific.  For example, a model that stores cities might have the keys
 `[ 'cityName', 'state', 'country', 'planet' ]`.
 
-### getModelType()
+### getType()
 
 Returns the base model type, which is typically simply the constructor name.
 For example, `UnimongoModel` or `ElasticsearchModel`.
@@ -929,3 +929,14 @@ This groups by age (in intervals of 4) and animalType.  The results for this loo
 ```
 
 
+## Miscellaneous methods
+
+You can use `Model.isModel` to test whether a given value is a model instance.
+
+```javascript
+Model.isModel(new Model());
+// => true
+
+Model.isModel('bar');
+// => false
+```

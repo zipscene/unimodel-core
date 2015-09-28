@@ -1,12 +1,11 @@
 const expect = require('chai').expect;
 const _ = require('lodash');
-const SchemaModel = require('../lib').SchemaModel;
-const SchemaDocument = require('../lib').SchemaDocument;
-const createSchema = require('zs-common-schema').createSchema;
-const QueryValidationError = require('zs-common-query').QueryValidationError;
 const pasync = require('pasync');
+const { createSchema } = require('zs-common-schema');
+const { QueryValidationError } = require('zs-common-query');
+const { SchemaModel, SchemaDocument } = require('../lib');
 
-describe('Schema Model', function() {
+describe('SchemaModel', function() {
 	class TestSchemaDocument extends SchemaDocument {
 		save() {
 			return this.normalize();
