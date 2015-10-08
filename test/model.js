@@ -99,6 +99,42 @@ describe('Model', function() {
 		}).catch(done);
 	});
 
+	it('#upsert should run #insert if no documents are found', function() {
+		let hasRunInsert = false;
+		let hasRunUpdate = false;
+
+		class TestModel extends Model {
+			count() { return Promise.resolve(0); }
+			insert() { hasRunInsert = true; }
+			update() { hasRunUpdate = true; }
+		}
+
+		const testModel = new TestModel();
+		return testModel.upsert({ foo: 'bar' }, { foo: 'baz' })
+			.then(() => {
+				expect(hasRunInsert).to.be.true;
+				expect(hasRunUpdate).to.be.false;
+			});
+	});
+
+	it('#upsert should run #update if documents are found', function() {
+		let hasRunInsert = false;
+		let hasRunUpdate = false;
+
+		class TestModel extends Model {
+			count() { return Promise.resolve(1); }
+			insert() { hasRunInsert = true; }
+			update() { hasRunUpdate = true; }
+		}
+
+		const testModel = new TestModel();
+		return testModel.upsert({ foo: 'bar' }, { foo: 'baz' })
+			.then(() => {
+				expect(hasRunInsert).to.be.false;
+				expect(hasRunUpdate).to.be.true;
+			});
+	});
+
 	it('should delegate aggregateMulti() to aggregate()', function(done) {
 		let i = 1;
 

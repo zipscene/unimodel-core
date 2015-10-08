@@ -211,14 +211,14 @@ animals.remove({ animalType: 'dog' }).then(function(numRemoved) { ... })
 
 ### update(query, update[, options])
 
-Performs an update operation on all documents in the database that match a query.  The update
-expression given is a CommonQuery syntax update.
+Performs an update operation on all documents in the database that match a query.
+The update expression given is a CommonQuery syntax update.
 
-Options can include:
+Options may include:
 
-- `allowFullReplace` - By default, if the update expression doesn't contain any operators (starting
-with `$`), the whole object is implicitly wrapped in a `$set` instead of replacing the entire
-document.  If `allowFullReplace` is set to true, this behavior is disabled.
+- `allowFullReplace` - By default, if the update expression doesn't contain any operators (starting with `$`),
+the whole object is implicitly wrapped in a `$set` instead of replacing the entire document.
+If `allowFullReplace` is set to true, this behavior is disabled.
 
 ```js
 animals.update({
@@ -239,6 +239,21 @@ animals.insert({
 	age: 5,
 	...
 }).then(function() { ... });
+```
+
+### upsert(query, update[, options])
+
+Performs an update operation on all documents in the database that match a query, creating a document if none exist.
+The update expression given is a CommonQuery syntax update.
+The default implementation is to call `#insert` when there are no matching documents, and `#update` if there are.
+Accepts the same options as `#update`.
+
+```js
+animals.upsert({
+	name: 'Toby'
+}, {
+	$inc: { age: 1 }
+}).then(function(numUpdated) { ... });
 ```
 
 ## Document
