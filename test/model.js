@@ -1,8 +1,9 @@
-const expect = require('chai').expect;
+const { expect } = require('chai');
+const _ = require('lodash');
 const pasync = require('pasync');
 const XError = require('xerror');
 const zstreams = require('zstreams');
-const { Model } = require('../lib');
+const { Model, Document } = require('../lib');
 
 describe('Model', function() {
 	it('::isModel', function() {
@@ -97,6 +98,28 @@ describe('Model', function() {
 			expect(total).to.equal(3);
 			done();
 		}).catch(done);
+	});
+
+	it('#update should have a working default implementation', function() {
+		class TestDocument extends Document {
+			save(props) {
+				_.merge(this, props);
+				return Promise.resolve(this);
+			}
+		}
+
+		class TestModel extends Model {
+			find() {
+				return Promise.resolve([ new TestDocument({ foo: 'bar' }) ]);
+			}
+		}
+
+		const testModel = new TestModel();
+		return testModel.update({ foo: 'bar' }, { foo: 'baz' })
+			.then((documents) => {
+				expect(documents).to.have.length(1);
+				expect(documents[0].foo).to.equal('baz');
+			});
 	});
 
 	it('should delegate aggregateMulti() to aggregate()', function(done) {
