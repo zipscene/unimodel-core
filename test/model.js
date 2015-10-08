@@ -116,9 +116,44 @@ describe('Model', function() {
 
 		const testModel = new TestModel();
 		return testModel.update({ foo: 'bar' }, { foo: 'baz' })
-			.then((documents) => {
-				expect(documents).to.have.length(1);
-				expect(documents[0].foo).to.equal('baz');
+			.then((docs) => {
+				expect(docs).to.have.length(1);
+				expect(docs[0].foo).to.equal('baz');
+			});
+	});
+
+	it('#remove should have a working default implementation', function() {
+		let collection = new Set();
+
+		class TestDocument extends Document {
+			remove() {
+				collection.delete(this);
+				return Promise.resolve(this);
+			}
+		}
+
+		class TestModel extends Model {
+			insert() {
+				let doc = new TestDocument({ foo: 'bar' });
+				collection.add(doc);
+				return Promise.resolve(doc);
+			}
+			find() {
+				return Promise.resolve(Array.from(collection));
+			}
+		}
+
+		const testModel = new TestModel();
+		return testModel.insert({ foo: 'bar' })
+			.then((doc) => {
+				expect(doc).to.be.instanceof(TestDocument);
+				expect(collection.size).to.equal(1);
+				expect(collection.has(doc)).to.be.true;
+			})
+			.then(() => testModel.remove({ foo: 'bar' }))
+			.then((doc) => {
+				expect(collection.size).to.equal(0);
+				expect(collection.has(doc)).to.be.false;
 			});
 	});
 
