@@ -256,6 +256,7 @@ animals.upsert({
 }).then(function(numUpdated) { ... });
 ```
 
+
 ## Document
 
 A document represents a single object in the datastore.  It should not be constructed
@@ -948,10 +949,16 @@ This groups by age (in intervals of 4) and animalType.  The results for this loo
 
 You can use `Model.isModel` to test whether a given value is a model instance.
 
-```javascript
+```js
 Model.isModel(new Model());
 // => true
 
 Model.isModel('bar');
 // => false
 ```
+
+
+## Quirks
+
+- The default implementation of `#upsert` provided does not work with `Array` paths.
+  It is recommended to override the `#upsert` method that if something more robust is desired.
