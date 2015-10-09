@@ -1,8 +1,9 @@
-const expect = require('chai').expect;
+const { expect } = require('chai');
+const _ = require('lodash');
 const pasync = require('pasync');
 const XError = require('xerror');
 const zstreams = require('zstreams');
-const { Model } = require('../lib');
+const { Model, Document } = require('../lib');
 
 describe('Model', function() {
 	it('::isModel', function() {
@@ -97,6 +98,63 @@ describe('Model', function() {
 			expect(total).to.equal(3);
 			done();
 		}).catch(done);
+	});
+
+	it('#update should have a working default implementation', function() {
+		class TestDocument extends Document {
+			save(props) {
+				_.merge(this, props);
+				return Promise.resolve(this);
+			}
+		}
+
+		class TestModel extends Model {
+			find() {
+				return Promise.resolve([ new TestDocument({ foo: 'bar' }) ]);
+			}
+		}
+
+		const testModel = new TestModel();
+		return testModel.update({ foo: 'bar' }, { foo: 'baz' })
+			.then((docs) => {
+				expect(docs).to.have.length(1);
+				expect(docs[0].foo).to.equal('baz');
+			});
+	});
+
+	it('#remove should have a working default implementation', function() {
+		let collection = new Set();
+
+		class TestDocument extends Document {
+			remove() {
+				collection.delete(this);
+				return Promise.resolve(this);
+			}
+		}
+
+		class TestModel extends Model {
+			insert() {
+				let doc = new TestDocument({ foo: 'bar' });
+				collection.add(doc);
+				return Promise.resolve(doc);
+			}
+			find() {
+				return Promise.resolve(Array.from(collection));
+			}
+		}
+
+		const testModel = new TestModel();
+		return testModel.insert({ foo: 'bar' })
+			.then((doc) => {
+				expect(doc).to.be.instanceof(TestDocument);
+				expect(collection.size).to.equal(1);
+				expect(collection.has(doc)).to.be.true;
+			})
+			.then(() => testModel.remove({ foo: 'bar' }))
+			.then((doc) => {
+				expect(collection.size).to.equal(0);
+				expect(collection.has(doc)).to.be.false;
+			});
 	});
 
 	it('should delegate aggregateMulti() to aggregate()', function(done) {
