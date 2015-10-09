@@ -210,4 +210,11 @@ describe('SchemaModel', function() {
 			.catch(done)
 			.catch(pasync.abort);
 	});
+
+	it('should be able to set a new schema', function() {
+		let testModel = new TestSchemaModel({ foo: { type: Number, key: true } });
+		expect(testModel.getKeys()).to.deep.equal([ 'foo' ]);
+		testModel._setSchema({ bar: { type: Number, key: true } });
+		expect(testModel.getKeys()).to.deep.equal([ 'bar' ]);
+	});
 });
