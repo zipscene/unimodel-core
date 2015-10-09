@@ -960,5 +960,5 @@ Model.isModel('bar');
 
 ## Quirks
 
-- The default implementation of `#upsert` provided does not work with `Array` paths.
-  It is recommended to override the `#upsert` method that if something more robust is desired.
+- The default implementation of `Model#upsert` provided does not work with `Array` paths.
+  It is recommended to override the `Model#upsert` method if something more robust is desired.
