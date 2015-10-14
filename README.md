@@ -118,6 +118,14 @@ model.findStream({ foo: { $gt: 5 } }).intoArray().then(...);
 If `findStream()` is not overridden, but `find()` is, the default implementation will use `find()`
 and construct a fake readable stream.
 
+### findOne(query[, options])
+
+This method is like `find`, but returns only the first result if any are found.
+
+```js
+model.findOne({ foo: { $gt: 5 } }).then(...);
+```
+
 ### count(query[, options])
 
 Takes the same options as `find()`.  Returns a promise that resolves with the count of documents
