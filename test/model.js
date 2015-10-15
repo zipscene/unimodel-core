@@ -1,9 +1,12 @@
-const { expect } = require('chai');
+const chai = require('chai');
+const expect = chai.expect;
 const _ = require('lodash');
 const pasync = require('pasync');
 const XError = require('xerror');
 const zstreams = require('zstreams');
 const { Model, Document } = require('../lib');
+
+chai.use(require('chai-as-promised'));
 
 describe('Model', function() {
 	it('::isModel', function() {
@@ -118,6 +121,38 @@ describe('Model', function() {
 			.then((value) => {
 				expect(value).to.equal(one);
 			});
+	});
+
+	it('#findOne should reject with NOT_FOUND when no results are found', function() {
+		class TestModel extends Model {
+			find() { return Promise.resolve([]); }
+		}
+
+		const testModel = new TestModel();
+
+		let promise = testModel.findOne({})
+			.catch((err) => {
+				expect(err.code).to.equal(XError.NOT_FOUND);
+				throw err;
+			});
+
+		return expect(promise).to.be.rejectedWith(XError);
+	});
+
+	it('#findOne should reject with UNSUPPORTED_FORMAT when #find doesn\'t return an array', function() {
+		class TestModel extends Model {
+			find() { return Promise.resolve('not an array'); }
+		}
+
+		const testModel = new TestModel();
+
+		let promise = testModel.findOne({})
+			.catch((err) => {
+				expect(err.code).to.equal(XError.UNSUPPORTED_FORMAT);
+				throw err;
+			});
+
+		return expect(promise).to.be.rejectedWith(XError);
 	});
 
 	it('#update should have a working default implementation', function() {
