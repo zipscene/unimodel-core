@@ -43,33 +43,33 @@ describe('Model', function() {
 		}
 	});
 
-	it('should delegate findStream() to find()', function(done) {
+	it('should delegate findStream() to find()', function() {
 		class TestModel extends Model {
 			find() {
 				return Promise.resolve([ 1, 2, 3 ]);
 			}
 		}
 		const testModel = new TestModel();
-		testModel.findStream({}).intoArray().then((results) => {
-			expect(results).to.deep.equal([ 1, 2, 3 ]);
-			done();
-		}).catch(done);
+		return testModel.findStream({}).intoArray()
+			.then((results) => {
+				expect(results).to.deep.equal([ 1, 2, 3 ]);
+			});
 	});
 
-	it('should delegate find() to findStream()', function(done) {
+	it('should delegate find() to findStream()', function() {
 		class TestModel extends Model {
 			findStream() {
 				return zstreams.fromArray([ 1, 2, 3 ]);
 			}
 		}
 		const testModel = new TestModel();
-		testModel.find({}).then((results) => {
-			expect(results).to.deep.equal([ 1, 2, 3 ]);
-			done();
-		}).catch(done);
+		return testModel.find({})
+			.then((results) => {
+				expect(results).to.deep.equal([ 1, 2, 3 ]);
+			});
 	});
 
-	it('should delegate findStream() getTotal() to find()', function(done) {
+	it('should delegate findStream() getTotal() to find()', function() {
 		class TestModel extends Model {
 			find() {
 				let ret = [ 1, 2, 3 ];
@@ -77,15 +77,17 @@ describe('Model', function() {
 				return Promise.resolve(ret);
 			}
 		}
+
 		const testModel = new TestModel();
 		let stream = testModel.findStream({}, { total: true });
-		stream.getTotal().then((total) => {
-			expect(total).to.equal(3);
-			done();
-		}).catch(done);
+
+		return stream.getTotal()
+			.then((total) => {
+				expect(total).to.equal(3);
+			});
 	});
 
-	it('should delegate count() to find()', function(done) {
+	it('should delegate count() to find()', function() {
 		class TestModel extends Model {
 			find() {
 				let ret = [ 1, 2, 3 ];
@@ -93,11 +95,14 @@ describe('Model', function() {
 				return Promise.resolve(ret);
 			}
 		}
+
 		const testModel = new TestModel();
-		testModel.count({}).then(function(total) {
-			expect(total).to.equal(3);
-			done();
-		}).catch(done);
+
+		return testModel.count({})
+			.then(function(total) {
+				expect(total).to.equal(3);
+			});
+	});
 
 	it('#findOne should return the first result of #find', function() {
 		const one = { foo: 'bar' };
@@ -230,7 +235,7 @@ describe('Model', function() {
 			});
 	});
 
-	it('should delegate aggregateMulti() to aggregate()', function(done) {
+	it('should delegate aggregateMulti() to aggregate()', function() {
 		let i = 1;
 
 		class TestModel extends Model {
@@ -238,10 +243,12 @@ describe('Model', function() {
 				return Promise.resolve([ i++ ]);
 			}
 		}
+
 		const testModel = new TestModel();
-		testModel.aggregateMulti({}, { foo: 0, bar: 0, baz: 0 }).then((results) => {
-			expect(results).to.deep.equal({ foo: [ 1 ], bar: [ 2 ], baz: [ 3 ] });
-			done();
-		}).catch(done);
+
+		return testModel.aggregateMulti({}, { foo: 0, bar: 0, baz: 0 })
+			.then((results) => {
+				expect(results).to.deep.equal({ foo: [ 1 ], bar: [ 2 ], baz: [ 3 ] });
+			});
 	});
 });
