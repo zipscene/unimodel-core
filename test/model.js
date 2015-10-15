@@ -98,6 +98,21 @@ describe('Model', function() {
 			expect(total).to.equal(3);
 			done();
 		}).catch(done);
+
+	it('#findOne should return the first result of #find', function() {
+		const one = { foo: 'bar' };
+		const two = { foo: 'baz' };
+
+		class TestModel extends Model {
+			find() { return Promise.resolve([ one, two ]); }
+		}
+
+		const testModel = new TestModel();
+
+		return testModel.findOne({})
+			.then((value) => {
+				expect(value).to.equal(one);
+			});
 	});
 
 	it('#update should have a working default implementation', function() {
