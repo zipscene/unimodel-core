@@ -1,6 +1,6 @@
 {
   "name": "zs-unimodel",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Basis for zsapi unified model framework",
   "main": "./dist/lib/index.js",
   "repository": {
@@ -15,7 +15,7 @@
     "prepublish": "npm run-script build && npm run-script docs"
   },
   "dependencies": {
-    "babel-runtime": "5.8.20",
+    "babel-runtime": "^5.8.29",
     "crisphooks": "^2.0.0",
     "inheritz": "^1.1.0",
     "lodash": "^3.10.0",
