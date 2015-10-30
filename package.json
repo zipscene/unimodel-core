@@ -1,6 +1,6 @@
 {
   "name": "zs-unimodel",
-  "version": "0.5.13",
+  "version": "0.5.14",
   "description": "Basis for zsapi unified model framework",
   "main": "./dist/lib/index.js",
   "repository": {
