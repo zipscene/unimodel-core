@@ -156,24 +156,33 @@ describe('Model', function() {
 	});
 
 	it('#update should have a working default implementation', function() {
+
 		class TestDocument extends Document {
+			constructor(...args) {
+				super(...args);
+			}
 			save(props) {
-				_.merge(this, props);
+				_.merge(this.data, props);
 				return Promise.resolve(this);
 			}
 		}
 
+		let testDocument;
+
 		class TestModel extends Model {
 			find() {
-				return Promise.resolve([ new TestDocument({ foo: 'bar' }) ]);
+				return Promise.resolve([ testDocument ]);
 			}
 		}
 
 		const testModel = new TestModel();
+		testDocument = new TestDocument(testModel, { foo: 'bar' });
+
 		return testModel.update({ foo: 'bar' }, { foo: 'baz' })
+			.then((docs) => testModel.find({}))
 			.then((docs) => {
 				expect(docs).to.have.length(1);
-				expect(docs[0].foo).to.equal('baz');
+				expect(docs[0].data.foo).to.equal('baz');
 			});
 	});
 
