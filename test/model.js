@@ -245,8 +245,8 @@ describe('Model', function() {
 
 		class TestModel extends Model {
 			count() { return Promise.resolve(1); }
-			insert() { hasRunInsert = true; }
-			update() { hasRunUpdate = true; }
+			insert() { hasRunInsert = true; return Promise.resolve(); }
+			update() { hasRunUpdate = true; return Promise.resolve(); }
 		}
 
 		const testModel = new TestModel();
