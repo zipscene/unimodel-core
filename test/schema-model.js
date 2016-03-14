@@ -148,23 +148,18 @@ describe('SchemaModel', function() {
 			.catch(pasync.abort);
 	});
 
-	it('should fail to normalize invalid documents', function(done) {
-		let testModel = new TestSchemaModel(testSchemaData);
-		let testDocument = testModel.create({ foo: {} });
-		testDocument.normalize()
-			.then(() => {
-				done(new Error('Expected error'));
-			})
-			.catch((err) => {
-				expect(err.message).to.match(/required/i);
-				done();
-			})
-			.catch(done)
-			.catch(pasync.abort);
+	it('should fail to normalize invalid documents', function() {
+		let testModel, testDocument;
+		try {
+			testModel = new TestSchemaModel(testSchemaData);
+			testDocument = testModel.create({ foo: {} });
+		} catch (ex) {
+			expect(ex.message).to.match(/required/i);
+		}
 	});
 
 	it('should not fail to normalize if not requiring fields', function(done) {
-		let testModel = new TestSchemaModel(testSchemaData);
+		let testModel = new TestSchemaModel(testSchemaData, { normalize: { allowMissingFields: true } });
 		let testDocument = testModel.create({ foo: {} });
 		testDocument.normalize({ allowMissingFields: true })
 			.then(() => done())
@@ -172,22 +167,17 @@ describe('SchemaModel', function() {
 			.catch(pasync.abort);
 	});
 
-	it('should fail if the object contains extra fields', function(done) {
+	it('should fail if the object contains extra fields', function() {
 		let testModel = new TestSchemaModel(testSchemaData);
-		let testDocument = testModel.create({ foo: {
-			bar: 'asdf',
-			nonexist: 'foo'
-		} });
-		testDocument.normalize()
-			.then(() => {
-				done(new Error('Expected error'));
-			})
-			.catch((err) => {
-				expect(err.message).to.match(/unknown/i);
-				done();
-			})
-			.catch(done)
-			.catch(pasync.abort);
+		let testDocument;
+		try {
+			testDocument = testModel.create({ foo: {
+				bar: 'asdf',
+				nonexist: 'foo'
+			} });
+		} catch (ex) {
+			expect(ex.message).to.match(/unknown/i);
+		}
 	});
 
 	it('should trigger hooks when normalizing documents', function(done) {
