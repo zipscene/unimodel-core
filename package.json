@@ -1,6 +1,6 @@
 {
   "name": "zs-unimodel",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Basis for zsapi unified model framework",
   "main": "./dist/lib/index.js",
   "repository": {
@@ -22,7 +22,7 @@
     "pasync": "^1.4.0",
     "xerror": "^1.0.0",
     "zs-common-query": "^1.9.3",
-    "zs-common-schema": "^1.7.4",
+    "zs-common-schema": "^1.7.5",
     "zs-objtools": "^1.4.0",
     "zstreams": "^3.2.2"
   },
