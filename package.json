@@ -1,12 +1,15 @@
 {
-  "name": "zs-unimodel",
+  "name": "unimodel-core",
   "version": "0.6.14",
-  "description": "Basis for zsapi unified model framework",
+  "description": "Universal unified database model framework, core package",
   "main": "./dist/lib/index.js",
   "repository": {
     "type": "git",
-    "url": "git@git.zipscene.com:zsapilibs/zs-unimodel.git"
+    "url": "https://github.com/zipscene/unimodel-core.git"
   },
+  "keywords": [
+    "unimodel"
+  ],
   "scripts": {
     "lint": "node ./node_modules/.bin/eslint . || exit 0",
     "docs": "node ./node_modules/.bin/yuidoc .",
@@ -21,10 +24,10 @@
     "lodash": "^3.10.0",
     "pasync": "^1.4.0",
     "xerror": "^1.0.0",
-    "zs-common-query": "^1.9.11",
-    "zs-common-schema": "^1.7.13",
-    "zs-objtools": "^1.6.2",
-    "zstreams": "^3.2.2"
+    "zstreams": "^3.2.2",
+    "common-query": "^1.9.11",
+    "common-schema": "^1.7.13",
+    "objtools": "^1.6.2"
   },
   "devDependencies": {
     "broccoli": "^0.16.7",
@@ -41,7 +44,5 @@
     "source-map-support": "^0.3.2",
     "yuidocjs": "^0.9.0"
   },
-  "publishConfig": {
-    "registry": "https://npm.zipscene.com/"
-  }
+  "license": "Apache-2.0"
 }

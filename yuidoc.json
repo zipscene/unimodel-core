@@ -1,5 +1,5 @@
 {
-	"name": "zs-unimodel",
+	"name": "unimodel-core",
 	"description": "Basis for zsapi unified model framework",
 	"options": {
 		"outdir": "./docs",

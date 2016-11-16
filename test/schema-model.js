@@ -1,8 +1,12 @@
+// Copyright 2016 Zipscene, LLC
+// Licensed under the Apache License, Version 2.0
+// http://www.apache.org/licenses/LICENSE-2.0
+
 const expect = require('chai').expect;
 const _ = require('lodash');
 const pasync = require('pasync');
-const { createSchema } = require('zs-common-schema');
-const { QueryValidationError } = require('zs-common-query');
+const { createSchema } = require('common-schema');
+const { QueryValidationError } = require('common-query');
 const { SchemaModel, SchemaDocument } = require('../lib');
 
 describe('SchemaModel', function() {

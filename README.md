@@ -1,4 +1,4 @@
-# zs-unimodel
+# unimodel-core
 
 Unimodel is a specification and framework for creating models across multiple different data
 sources that behave the same.  Model implementors must override the relevant methods on the
@@ -42,7 +42,7 @@ of a specific API (say, Twitter).
 To create a model, inherit from the base `Model` class and override any of its methods that you support.
 
 ```js
-const Model = require('zs-unimodel').Model;
+const Model = require('unimodel-core').Model;
 ```
 
 These methods are:
@@ -390,7 +390,7 @@ This `normalize()` method returns a promise as hooks can execute asynchronously.
 
 ## Aggregates
 
-See the [aggregates section in zs-common-query](https://git.zipscene.com/zsapilibs/zs-common-query#aggregates)
+See the [aggregates section in common-query](https://git.zipscene.com/zsapilibs/common-query#aggregates)
 for details.
 
 
