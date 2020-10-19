@@ -1,6 +1,6 @@
 {
   "name": "unimodel-core",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Universal unified database model framework, core package",
   "main": "./lib/index.js",
   "repository": {
@@ -12,30 +12,27 @@
   ],
   "scripts": {
     "lint": "node ./node_modules/.bin/eslint . || exit 0",
-    "docs": "node ./node_modules/.bin/yuidoc .",
-    "test": "node ./node_modules/.bin/mocha ./test -R spec",
-    "prepublishOnly": "npm run-script docs"
+    "test": "node ./node_modules/.bin/mocha ./test -R spec"
   },
   "dependencies": {
-    "common-query": "^2.0.1",
-    "common-schema": "^2.0.1",
-    "crisphooks": "^2.0.0",
+    "common-query": "^3.0.0",
+    "common-schema": "^3.0.0",
+    "crisphooks": "^2.0.1",
     "inheritz": "^1.2.0",
-    "lodash": "^4.17.10",
-    "objtools": "^2.0.1",
-    "pasync": "^1.5.0",
-    "xerror": "^1.1.2",
-    "zstreams": "^4.0.0"
+    "lodash": "^4.17.20",
+    "objtools": "^3.0.0",
+    "pasync": "^2.0.1",
+    "xerror": "^2.0.0",
+    "zstreams": "^5.0.0"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
+    "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "eslint": "^5.5.0",
-    "mocha": "^5.2.0",
-    "yuidocjs": "^0.10.2"
+    "eslint": "^7.7.0",
+    "mocha": "^8.1.2"
   },
   "license": "Apache-2.0",
   "engines": {
-    "node": ">= 8.0.0"
+    "node": ">= 14.0.0"
   }
 }
